@@ -8,7 +8,7 @@ import streamlit as st
 
 # --- REPLIT SECURE AUTHENTICATION ---
 import os
-API_KEY = AYHYKPUC80ETBL1Z
+API_KEY = "AYHYKPUC80ETBL1Z"
 
 CACHE_DB = "stock_cache.db"
 CACHE_EXPIRY = 86400  
