@@ -4,10 +4,11 @@ import matplotlib.pyplot as plt
 import ollama  # Handles local or remote inference pipelines
 import streamlit as st
 import yfinance as yf  # Free, unlimited financial data stream
+import os
 
 # OLLAMA CONFIGURATION:
 # Defaults to your local machine, but reads an environment variable on Render
-OLLAMA_HOST = st.environ.get("OLLAMA_HOST", "http://localhost:11434")
+OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
 
 # Configure widescreen dark terminal canvas
 st.set_page_config(
