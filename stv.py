@@ -10,7 +10,7 @@ import ollama  # Handles local or remote inference pipelines
 
 # --- PRODUCTION CONFIGURATIONS & SECURE KEY AUTHENTICATION ---
 # Securely fallback if Alpha Vantage environment variable isn't set
-API_KEY = os.environ.get("ALPHA_VANTAGE_KEY", "E2LEARAZBZOK5G1Q")
+API_KEY = os.environ.get("ALPHA_VANTAGE_KEY", "TF4Z6L86EW19R9T4")
 
 # OLLAMA CONFIGURATION:
 # Defaults to your local machine, but reads an environment variable on Render
