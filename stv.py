@@ -13,6 +13,9 @@ import ollama  # Handles local or remote inference pipelines
 # Now it safely looks for a variable named "ALPHA_VANTAGE_KEY" on your system or Render
 API_KEY = os.environ.get("ALPHA_VANTAGE_KEY")
 
+if not API_KEY:
+    st.error("🚨 Debug Warning: The server cannot find ALPHA_VANTAGE_KEY in the environment variables!")
+
 # OLLAMA CONFIGURATION:
 # Defaults to your local machine, but reads an environment variable on Render
 OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
