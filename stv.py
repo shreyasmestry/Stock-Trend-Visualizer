@@ -183,7 +183,7 @@ if ticker:
                         data = raw_json
                         save_to_cache(ticker, data)
                         increment_daily_calls()
-                        st.rerun()
+                        
                     elif "Note" in raw_json:
                         st.warning("⚠️ Alpha Vantage Rate Limit hit (5 requests/min limit). The local server will resume in 60s.")
                         data = None
