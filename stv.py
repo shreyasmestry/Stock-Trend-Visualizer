@@ -7,14 +7,45 @@ import matplotlib.pyplot as plt
 import streamlit as st
 import os
 import ollama  # Handles local or remote inference pipelines
+import yfinance as yf
 
-# --- PRODUCTION CONFIGURATIONS & SECURE KEY AUTHENTICATION ---
-# Securely fallback if Alpha Vantage environment variable isn't set
-# Now it safely looks for a variable named "ALPHA_VANTAGE_KEY" on your system or Render
-API_KEY = os.environ.get("ALPHA_VANTAGE_KEY")
+# ... (keep your layout, styles, and sidebar controls exactly the same)
 
-if not API_KEY:
-    st.error("🚨 Debug Warning: The server cannot find ALPHA_VANTAGE_KEY in the environment variables!")
+# Canvas Data Processing Pipeline
+if ticker:
+    st.markdown("---")
+    try:
+        # Fetch directly from Yahoo Finance with no API keys required
+        with st.spinner(f"Pulling live data matrix for {ticker}..."):
+            stock = yf.Ticker(ticker)
+            # Fetch 30 days of history to safely cover trading days
+            df = stock.history(period="1mo") 
+            
+        if not df.empty:
+            # Sort and slice the exact number of days chosen by the slider
+            df = df.sort_index()
+            selected_df = df.tail(days_to_show)
+            
+            # Extract lists for your matplotlib chart
+            selected_dates = [date.strftime('%Y-%m-%d') for date in selected_df.index]
+            closing_prices = selected_df['Close'].tolist()
+            
+            # --- Map the metrics for your current stat cards ---
+            latest_price = closing_prices[-1]
+            previous_price = closing_prices[-2] if len(closing_prices) > 1 else latest_price
+            price_delta = latest_price - previous_price
+            percentage_growth = (price_delta / previous_price) * 100
+            highest_record = max(closing_prices)
+            lowest_record = min(closing_prices)
+            
+            # ... (Paste your existing Metric Columns and Chart/Ledger layout code here!) ...
+            # Note: For the AI payload dictionary, you can loop through selected_df rows.
+            
+        else:
+            st.error(f"❌ No asset data found for symbol: {ticker}")
+            
+    except Exception as e:
+        st.error(f"💥 Analytics pipeline failure: {str(e)}")
 
 # OLLAMA CONFIGURATION:
 # Defaults to your local machine, but reads an environment variable on Render
