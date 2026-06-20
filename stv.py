@@ -23,12 +23,19 @@ st.markdown(
             background-color: #0b0f19;
             color: #f3f4f6;
         }
+        /* Updated to ensure all numbers and text inside metrics are readable and not black */
         div[data-testid="stMetricContainer"] {
             background: linear-gradient(145deg, #111827, #1f2937);
             border: 1px solid #374151;
             padding: 20px 24px;
             border-radius: 12px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        div[data-testid="stMetricValue"] {
+            color: #ffffff !important;
+        }
+        div[data-testid="stMetricLabel"] {
+            color: #9ca3af !important;
         }
         h1 {
             background: linear-gradient(to right, #3b82f6, #10b981);
@@ -81,7 +88,7 @@ st.markdown("---")
 with st.sidebar:
     st.header("⚙️ Core Controls")
     ticker = (
-        st.text_input("🎯 Target Asset Ticker", value="IBM", help="Type stock code")
+        st.text_input("🎯 Target Asset Ticker", value="NVDA", help="Type stock code")
         .upper()
         .strip()
     )
@@ -90,10 +97,7 @@ with st.sidebar:
     )
     chart_color = st.color_picker("🎨 Performance Accent Line Glow", "#10b981")
 
-    st.markdown("---")
-    st.subheader("🔋 Infrastructure Quota")
-    st.progress(1.0)
-    st.caption("Network status: **UNLIMITED ACCESSIBILITY**")
+    # --- INFRASTRUCTURE QUOTA REMOVED FROM HERE ---
 
 # Canvas Data Processing Pipeline
 if ticker:
@@ -135,7 +139,7 @@ if ticker:
             m3.metric(label="📉 PERIOD FLOOR LOW", value=f"${lowest_record:,.2f}")
             m4.metric(
                 label="📦 SYSTEM ARCHIVE STATUS",
-                value="CLOUD LIVE",
+                value="LIVE",  # Changed from "CLOUD LIVE" to "LIVE"
                 delta="0 API Key Cost",
             )
 
