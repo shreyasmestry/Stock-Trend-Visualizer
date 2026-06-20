@@ -7,9 +7,9 @@ set -e
 export OLLAMA_MODELS="/tmp/ollama_models"
 mkdir -p $OLLAMA_MODELS
 
-echo "📥 Downloading the raw pre-compiled Ollama binary directly..."
-# We download the standalone Linux binary directly (no zip, no tar, no extraction needed)
-curl -L https://ollama.com/download/ollama-linux-amd64 -o ollama
+echo "📥 Downloading the raw pre-compiled Ollama binary from GitHub releases..."
+# Pulling the direct, official static compiled Linux binary
+curl -L https://github.com/ollama/ollama/releases/latest/download/ollama-linux-amd64 -o ollama
 
 echo "🔑 Giving executable permissions to the binary..."
 chmod +x ollama
