@@ -35,7 +35,7 @@ st.markdown(
         div[data-testid="stMetricValue"] {
             color: #ffffff !important;
         }
-        /* FIXED: Force the top metric headers/labels to be high-contrast and readable */
+        /* Force the top metric headers/labels to be high-contrast and readable */
         div[data-testid="stMetricLabel"] > div {
             color: #e5e7eb !important;
         }
@@ -58,6 +58,7 @@ st.markdown(
 """,
     unsafe_allow_html=True,
 )
+
 
 # --- AUTOMATED AI ENGINE ---
 def generate_ai_analysis(ticker, selected_df):
@@ -98,28 +99,23 @@ with st.sidebar:
     )
     chart_color = st.color_picker("🎨 Performance Accent Line Glow", "#10b981")
 
-    # --- INFRASTRUCTURE QUOTA REMOVED FROM HERE ---
-
 # Canvas Data Processing Pipeline
 if ticker:
     st.markdown("---")
     try:
         with st.spinner(f"Pulling live data matrix for {ticker}..."):
             stock = yf.Ticker(ticker)
-            # Fetch 1 month of data to ensure we safely cover enough business/trading days
             df = stock.history(period="1mo")
 
         if not df.empty:
             df = df.sort_index()
             selected_df = df.tail(days_to_show)
 
-            # Extract lists for your matplotlib chart
             selected_dates = [
                 date.strftime("%Y-%m-%d") for date in selected_df.index
             ]
             closing_prices = selected_df["Close"].tolist()
 
-            # Stat cards calculus transformations
             latest_price = closing_prices[-1]
             previous_price = (
                 closing_prices[-2] if len(closing_prices) > 1 else latest_price
@@ -140,7 +136,7 @@ if ticker:
             m3.metric(label="📉 PERIOD FLOOR LOW", value=f"${lowest_record:,.2f}")
             m4.metric(
                 label="📦 SYSTEM ARCHIVE STATUS",
-                value="LIVE",  # Changed from "CLOUD LIVE" to "LIVE"
+                value="LIVE",
                 delta="0 API Key Cost",
             )
 
