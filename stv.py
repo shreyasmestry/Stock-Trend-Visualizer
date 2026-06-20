@@ -23,7 +23,7 @@ st.markdown(
             background-color: #0b0f19;
             color: #f3f4f6;
         }
-        /* Updated to ensure all numbers and text inside metrics are readable and not black */
+        /* Container background styling */
         div[data-testid="stMetricContainer"] {
             background: linear-gradient(145deg, #111827, #1f2937);
             border: 1px solid #374151;
@@ -31,11 +31,13 @@ st.markdown(
             border-radius: 12px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
+        /* Changes the big numbers to bright white */
         div[data-testid="stMetricValue"] {
             color: #ffffff !important;
         }
-        div[data-testid="stMetricLabel"] {
-            color: #9ca3af !important;
+        /* FIXED: Force the top metric headers/labels to be high-contrast and readable */
+        div[data-testid="stMetricLabel"] > div {
+            color: #e5e7eb !important;
         }
         h1 {
             background: linear-gradient(to right, #3b82f6, #10b981);
@@ -56,7 +58,6 @@ st.markdown(
 """,
     unsafe_allow_html=True,
 )
-
 
 # --- AUTOMATED AI ENGINE ---
 def generate_ai_analysis(ticker, selected_df):
