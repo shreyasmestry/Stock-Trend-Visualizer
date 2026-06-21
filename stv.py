@@ -35,10 +35,13 @@ st.markdown(
         div[data-testid="stMetricValue"] {
             color: #ffffff !important;
         }
+       
         /* Force the top metric headers/labels to be high-contrast and readable */
-        div[data-testid="stMetricLabel"] > div {
-            color: #e5e7eb !important;
-        }
+    [data-testid="stMetricLabel"] p {
+    color: #e5e7eb !important;
+    font-weight: 600 !important;
+}
+        
         h1 {
             background: linear-gradient(to right, #3b82f6, #10b981);
             -webkit-background-clip: text;
