@@ -241,15 +241,16 @@ if ticker:
 else:
     st.info(
         "ℹ️ System terminal initialized. Change the asset ticker in the sidebar to load charts."
+    )
 
-        # --- PERSISTENT CONVERSATIONAL CHATBOT FOOTER ---
+# --- PERSISTENT CONVERSATIONAL CHATBOT FOOTER ---
 st.markdown("---")
 st.subheader("💬 Quantum Strategy Sandbox")
 
 # Initialize chat matrix state variables if missing
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [
-        {"role": "assistant", "content": f"System terminal linked. Ask me anything about structural asset metrics or general financial strategy."}
+        {"role": "assistant", "content": "System terminal linked. Ask me anything about structural asset metrics or general financial strategy."}
     ]
 
 # Display current active history logs
