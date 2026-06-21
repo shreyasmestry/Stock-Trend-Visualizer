@@ -241,4 +241,54 @@ if ticker:
 else:
     st.info(
         "ℹ️ System terminal initialized. Change the asset ticker in the sidebar to load charts."
+
+        # --- PERSISTENT CONVERSATIONAL CHATBOT FOOTER ---
+st.markdown("---")
+st.subheader("💬 Quantum Strategy Sandbox")
+
+# Initialize chat matrix state variables if missing
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = [
+        {"role": "assistant", "content": f"System terminal linked. Ask me anything about structural asset metrics or general financial strategy."}
+    ]
+
+# Display current active history logs
+for message in st.session_state.chat_history:
+    with st.chat_message(message["role"]):
+        st.write(message["content"])
+
+# Handle real-time interface submission input query
+if user_query := st.chat_input("Enter strategic data inquiry (e.g., 'What is a momentum risk?')..."):
+    # Append user prompt immediately to interface
+    st.session_state.chat_history.append({"role": "user", "content": user_query})
+    with st.chat_message("user"):
+        st.write(user_query)
+
+    # Route message query payload out to Groq engine cluster
+    with st.chat_message("assistant"):
+        with st.spinner("Processing cognitive matrix response..."):
+            try:
+                client = Groq(api_key=GROQ_API_KEY)
+                
+                # Format full thread context history for the model
+                messages_payload = [
+                    {"role": msg["role"], "content": msg["content"]}
+                    for msg in st.session_state.chat_history
+                ]
+                
+                response = client.chat.completions.create(
+                    model="llama-3.1-8b-instant",
+                    messages=messages_payload,
+                    temperature=0.5,
+                    max_tokens=250
+                )
+                
+                bot_response = response.choices[0].message.content
+                st.write(bot_response)
+                
+                # Append finalized structure output back to persistent session history state
+                st.session_state.chat_history.append({"role": "assistant", "content": bot_response})
+                
+            except Exception as e:
+                st.error(f"⚠️ Chat node link broken: `{str(e)}`")
     )
