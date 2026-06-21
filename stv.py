@@ -292,4 +292,4 @@ if user_query := st.chat_input("Enter strategic data inquiry (e.g., 'What is a m
                 
             except Exception as e:
                 st.error(f"⚠️ Chat node link broken: `{str(e)}`")
-    )
+                 
