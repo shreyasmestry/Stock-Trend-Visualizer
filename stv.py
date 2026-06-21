@@ -1,14 +1,14 @@
 import json
 from datetime import datetime
 import matplotlib.pyplot as plt
-import ollama  # Handles local or remote inference pipelines
+from groq import Groq  # Switched from ollama to lightweight Groq client
 import streamlit as st
 import yfinance as yf  # Free, unlimited financial data stream
 import os
 
-# OLLAMA CONFIGURATION:
-# Defaults to your local machine, but reads an environment variable on Render
-OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
+# GROQ API CONFIGURATION:
+# Securely pulls your free API key from Render's Environment Variables
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 
 # Configure widescreen dark terminal canvas
 st.set_page_config(
@@ -62,7 +62,10 @@ st.markdown(
 
 # --- AUTOMATED AI ENGINE ---
 def generate_ai_analysis(ticker, selected_df):
-    """Feeds historical metric segments into local/remote Ollama instance."""
+    """Feeds historical metric segments into cloud Groq instance."""
+    if not GROQ_API_KEY:
+        return "⚠️ **Groq API Key Missing**: Please set the `GROQ_API_KEY` environment variable in your Render dashboard settings."
+
     summary_pack = {}
     for index, row in selected_df.iterrows():
         date_str = index.strftime("%Y-%m-%d")
@@ -74,11 +77,20 @@ def generate_ai_analysis(ticker, selected_df):
     prompt = f"Analyze the following stock market asset history for ticker code: {ticker}.\nData:\n{json.dumps(summary_pack)}\n\nProvide a rapid 2-to-3 sentence analysis of the structural trend pattern (Bullish, Bearish, or Volatile) and highlight any immediate momentum risks."
 
     try:
-        client = ollama.Client(host=OLLAMA_HOST)
-        response = client.generate(model="qwen2.5-coder:1.5b", prompt=prompt)
-        return response["response"]
+        # Initialize Groq cloud engine client
+        client = Groq(api_key=GROQ_API_KEY)
+        
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",  # Free, lightning-fast model tier
+            messages=[
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.2,
+            max_tokens=150
+        )
+        return response.choices[0].message.content
     except Exception as e:
-        return f"⚠️ **AI Sub-Engine Offline**: Could not connect to the model node at `{OLLAMA_HOST}`. Check your local service or your Render app environment configs."
+        return f"⚠️ **AI Sub-Engine Offline**: Cloud routing pipeline failure. Error details: `{str(e)}`"
 
 
 # Main Canvas Headers
@@ -137,7 +149,7 @@ if ticker:
             m4.metric(
                 label="📦 SYSTEM ARCHIVE STATUS",
                 value="LIVE",
-                delta="0 API Key Cost",
+                delta="Cloud API Connected",
             )
 
             st.markdown("<br>", unsafe_allow_html=True)
@@ -203,16 +215,16 @@ if ticker:
 
             # --- STREAMING AI LOG BLOCK ---
             st.markdown("---")
-            st.subheader("🤖 Localized Cognitive Intelligence Interpretation")
+            st.subheader("🤖 Cloud Cognitive Intelligence Interpretation")
             with st.spinner(
-                "Parsing temporal vector matrix calculations via AI engine..."
+                "Streaming cloud-vectored analytics from Groq engine..."
             ):
                 ai_interpretation = generate_ai_analysis(ticker, selected_df)
 
             st.markdown(
                 f"""
                 <div class="ai-terminal">
-                    <strong>[TERMINAL FEED] Matrix Evaluation System (qwen2.5-coder:1.5b)</strong><br><br>
+                    <strong>[TERMINAL FEED] Cloud Evaluation System (llama-3.1-8b)</strong><br><br>
                     {ai_interpretation}
                 </div>
             """,
