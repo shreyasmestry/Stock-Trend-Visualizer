@@ -45,7 +45,7 @@ with st.sidebar:
     
     ticker = st.text_input("🔤 Asset Core Ticker", value="AAPL").upper().strip()
     
-    # Timeline window default set to 10 days
+    # 1. Timeline window default updated to 10 days
     days_to_show = st.slider(
         "📅 Timeline Window (Days)", 
         min_value=5, 
@@ -59,7 +59,7 @@ with st.sidebar:
     st.info("System terminal fully operational.")
 
 # ==============================================================================
-# MAIN ENGINE DATA FETCHING
+# MAIN ENGINE ENTRY & LAYOUT RESTORATION
 # ==============================================================================
 st.title("🎛️ Quantum Strategy Analytics Dashboard")
 
@@ -102,7 +102,7 @@ else:
 
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # Formulate structured payload prompt for the AI text analysis
+        # Formulate structural prompt text parameters
         raw_summary = (
             f"Asset: {ticker}. Latest Close: ${latest_price:,.2f} ({percentage_growth:+.2f}%). "
             f"High: ${highest_record:,.2f}, Low: ${lowest_record:,.2f} over past {days_to_show} intervals."
@@ -110,13 +110,13 @@ else:
         ai_interpretation = f"The underlying market matrix shows a dynamic shift. {raw_summary}"
 
         # ==============================================================================
-        # VISUALIZATION & ANALYTICS DATA DISPLAY LAYOUT (SIDE-BY-SIDE FIXED)
+        # RESTORED SIDE-BY-SIDE SIDE LAYOUT CANVAS GRID
         # ==============================================================================
-        chart_col, data_col = st.columns(2)
+        chart_col, data_col = st.columns([1.1, 0.9], gap="medium")
 
         with chart_col:
-            # Sized perfectly to line up with a standard table view
-            fig, ax = plt.subplots(figsize=(6, 4.2), facecolor="#111827")
+            # Rebalanced Matplotlib dimensions to match the table height cleanly
+            fig, ax = plt.subplots(figsize=(6, 4.1), facecolor="#111827")
             ax.set_facecolor("#111827")
             
             ax.plot(
@@ -153,12 +153,12 @@ else:
             ledger_data['Close'] = ledger_data['Close'].map('${:,.2f}'.format)
             ledger_data['Volume'] = ledger_data['Volume'].map('{:,.0f}'.format)
             
-            # Locked frame height parameter guarantees layout alignment symmetry
+            # Formulated exact size limits matching your exact canvas template layout
             st.dataframe(
                 ledger_data, 
                 use_container_width=True, 
                 hide_index=True,
-                height=335  
+                height=315  
             )
 
         # ==============================================================================
@@ -167,7 +167,7 @@ else:
         st.markdown("<br>", unsafe_allow_html=True)
         st.subheader("👁️ Cloud Cognitive Intelligence Interpretation")
 
-        # Removed the "[TERMINAL FEED]" bold row completely
+        # 2. Stripped out '[TERMINAL FEED]' label completely
         st.markdown(
             f"""
             <div class="ai-terminal">
@@ -183,7 +183,7 @@ else:
 st.markdown("---")
 st.subheader("💬 Quantum Strategy Sandbox")
 
-# Clean blank slate startup
+# 3. Clean empty list initialization eliminates default automated messages
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
