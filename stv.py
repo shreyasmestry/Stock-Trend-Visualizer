@@ -110,7 +110,7 @@ with st.sidebar:
         .strip()
     )
     days_to_show = st.slider(
-        "📅 Timeline Window (Days)", min_value=5, max_value=30, value=12
+        "📅 Timeline Window (Days)", min_value=5, max_value=30, value=10
     )
     chart_color = st.color_picker("🎨 Performance Accent Line Glow", "#10b981")
 
@@ -161,7 +161,7 @@ if ticker:
             chart_col, data_col = st.columns(2)
 
             with chart_col:
-                fig, ax = plt.subplots(figsize=(10, 4.8), facecolor="#111827")
+                fig, ax = plt.subplots(figsize=(10, 4.2), facecolor="#111827")
                 ax.set_facecolor("#111827")
 
                 ax.plot(
@@ -213,7 +213,7 @@ if ticker:
                         }
                     )
                 st.dataframe(
-                    ledger_data, use_container_width=True, hide_index=True
+                    ledger_data, use_container_width=True, hide_index=True, height=305
                 )
 
             # --- STREAMING AI LOG BLOCK ---
@@ -227,7 +227,6 @@ if ticker:
             st.markdown(
                 f"""
                 <div class="ai-terminal">
-                    <strong>[TERMINAL FEED] Cloud Evaluation System (llama-3.1-8b)</strong><br><br>
                     {ai_interpretation}
                 </div>
             """,
@@ -249,9 +248,7 @@ st.subheader("💬 Quantum Strategy Sandbox")
 
 # Initialize chat matrix state variables if missing
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [
-        {"role": "assistant", "content": "System terminal linked. Ask me anything about structural asset metrics or general financial strategy."}
-    ]
+    st.session_state.chat_history = []
 
 # Display current active history logs
 for message in st.session_state.chat_history:
