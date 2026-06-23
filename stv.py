@@ -7,10 +7,8 @@ import os
 # ==============================================================================
 # CONFIGURATION & GLOBAL VARIABLES
 # ==============================================================================
-# Retrieve secret keys securely from system environment runtime variables
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-# Basic page layout configuration
 st.set_page_config(
     page_title="Quantum Strategy Analytics Sandbox",
     layout="wide",
@@ -45,10 +43,9 @@ with st.sidebar:
     st.title("🛡️ Core System Controls")
     st.markdown("Select system variables to alter underlying evaluation matrices.")
     
-    # Text input ticker default
     ticker = st.text_input("🔤 Asset Core Ticker", value="AAPL").upper().strip()
     
-    # 1. FIXED: Default timeline window window updated to 10 days
+    # Timeline window default set to 10 days
     days_to_show = st.slider(
         "📅 Timeline Window (Days)", 
         min_value=5, 
@@ -62,80 +59,66 @@ with st.sidebar:
     st.info("System terminal fully operational.")
 
 # ==============================================================================
-# MAIN CORE LOGIC ENGINE (DATA ACQUISITION)
+# MAIN ENGINE DATA FETCHING
 # ==============================================================================
 st.title("🎛️ Quantum Strategy Analytics Dashboard")
 
 if not ticker:
     st.warning("⚠️ Access Denied: Core asset ticker string payload cannot be left empty.")
 else:
-    df_window = None
-    ai_interpretation = ""
-    
-    try:
-        with st.spinner(f"Pulling live data matrix for {ticker}..."):
-            stock = yf.Ticker(ticker)
-            df = stock.history(period="1mo")
+    with st.spinner(f"Pulling live data matrix for {ticker}..."):
+        stock = yf.Ticker(ticker)
+        df = stock.history(period="1mo")
 
-        if not df.empty:
-            df = df.sort_index()
-            # Prepare data slice matrix
-            df_window = df.tail(days_to_show).reset_index()
-            df_window['Date'] = df_window['Date'].dt.strftime('%Y-%m-%d')
-            
-            closing_prices = df_window["Close"].tolist()
+    if df.empty:
+        st.error("⚠️ No transactional ledger rows available to display.")
+    else:
+        df = df.sort_index()
+        df_window = df.tail(days_to_show).reset_index()
+        df_window['Date'] = df_window['Date'].dt.strftime('%Y-%m-%d')
+        
+        closing_prices = df_window["Close"].tolist()
+        latest_price = closing_prices[-1]
+        previous_price = closing_prices[-2] if len(closing_prices) > 1 else latest_price
+        price_delta = latest_price - previous_price
+        percentage_growth = (price_delta / previous_price) * 100
+        highest_record = max(closing_prices)
+        lowest_record = min(closing_prices)
 
-            latest_price = closing_prices[-1]
-            previous_price = (
-                closing_prices[-2] if len(closing_prices) > 1 else latest_price
-            )
-            price_delta = latest_price - previous_price
-            percentage_growth = (price_delta / previous_price) * 100
-            highest_record = max(closing_prices)
-            lowest_record = min(closing_prices)
+        # Build System Grid Metric Rows
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric(
+            label="📌 CURRENT TRANSACTION CLOSE",
+            value=f"${latest_price:,.2f}",
+            delta=f"{price_delta:+,.2f} ({percentage_growth:+.2f}%)",
+        )
+        m2.metric(label="📈 PERIOD CEILING HIGH", value=f"${highest_record:,.2f}")
+        m3.metric(label="📉 PERIOD FLOOR LOW", value=f"${lowest_record:,.2f}")
+        m4.metric(
+            label="📦 SYSTEM ARCHIVE STATUS",
+            value="LIVE",
+            delta="Cloud API Connected",
+        )
 
-            # Build System Grid Metric Rows
-            m1, m2, m3, m4 = st.columns(4)
-            m1.metric(
-                label="📌 CURRENT TRANSACTION CLOSE",
-                value=f"${latest_price:,.2f}",
-                delta=f"{price_delta:+,.2f} ({percentage_growth:+.2f}%)",
-            )
-            m2.metric(label="📈 PERIOD CEILING HIGH", value=f"${highest_record:,.2f}")
-            m3.metric(label="📉 PERIOD FLOOR LOW", value=f"${lowest_record:,.2f}")
-            m4.metric(
-                label="📦 SYSTEM ARCHIVE STATUS",
-                value="LIVE",
-                delta="Cloud API Connected",
-            )
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Formulate structured payload prompt for the AI text analysis
+        raw_summary = (
+            f"Asset: {ticker}. Latest Close: ${latest_price:,.2f} ({percentage_growth:+.2f}%). "
+            f"High: ${highest_record:,.2f}, Low: ${lowest_record:,.2f} over past {days_to_show} intervals."
+        )
+        ai_interpretation = f"The underlying market matrix shows a dynamic shift. {raw_summary}"
 
-            st.markdown("<br>", unsafe_allow_html=True)
-            
-            # Formulate structured payload prompt for the AI text analysis
-            raw_summary = (
-                f"Asset: {ticker}. Latest Close: ${latest_price:,.2f} ({percentage_growth:+.2f}%). "
-                f"High: ${highest_record:,.2f}, Low: ${lowest_record:,.2f} over past {days_to_show} intervals."
-            )
-            ai_interpretation = f"The underlying market matrix shows a dynamic shift. {raw_summary}"
-
-    except Exception as e:
-        st.error(f"⚠️ Core data engine link broken: {str(e)}")
-        df_window = None
-        ai_interpretation = "Analysis temporarily unavailable due to upstream connectivity drop."
-
-    # ==============================================================================
-    # VISUALIZATION & ANALYTICS DATA DISPLAY LAYOUT
-    # ==============================================================================
-    if df_window is not None and not df_window.empty:
-        # Create side-by-side column partitions with a clean horizontal gap
-        chart_col, data_col = st.columns([1, 1], gap="medium")
+        # ==============================================================================
+        # VISUALIZATION & ANALYTICS DATA DISPLAY LAYOUT (SIDE-BY-SIDE FIXED)
+        # ==============================================================================
+        chart_col, data_col = st.columns(2)
 
         with chart_col:
-            # Standardize the Matplotlib layout container dimensions
-            fig, ax = plt.subplots(figsize=(7, 4.3), facecolor="#111827")
+            # Sized perfectly to line up with a standard table view
+            fig, ax = plt.subplots(figsize=(6, 4.2), facecolor="#111827")
             ax.set_facecolor("#111827")
             
-            # Render asset plotting matrix onto frame
             ax.plot(
                 df_window['Date'], 
                 df_window['Close'], 
@@ -161,9 +144,8 @@ else:
             st.pyplot(fig, use_container_width=True)
 
         with data_col:
-            st.subheader("📊 Historical Ledger Sheet")
+            st.markdown("<h3 style='margin:0; padding-bottom:10px;'>📊 Historical Ledger Sheet</h3>", unsafe_allow_html=True)
             
-            # Build and map currency text parameters
             ledger_data = df_window[['Date', 'Open', 'High', 'Low', 'Close', 'Volume']].copy()
             ledger_data['Open'] = ledger_data['Open'].map('${:,.2f}'.format)
             ledger_data['High'] = ledger_data['High'].map('${:,.2f}'.format)
@@ -171,20 +153,21 @@ else:
             ledger_data['Close'] = ledger_data['Close'].map('${:,.2f}'.format)
             ledger_data['Volume'] = ledger_data['Volume'].map('{:,.0f}'.format)
             
-            # 2. FIXED: Locked frame height parameter guarantees absolute visual symmetry
+            # Locked frame height parameter guarantees layout alignment symmetry
             st.dataframe(
                 ledger_data, 
                 use_container_width=True, 
                 hide_index=True,
-                height=320  
+                height=335  
             )
 
         # ==============================================================================
         # COGNITIVE ENGINE INTERPRETATION OUTPUT TERMINAL
         # ==============================================================================
+        st.markdown("<br>", unsafe_allow_html=True)
         st.subheader("👁️ Cloud Cognitive Intelligence Interpretation")
 
-        # 3. FIXED: Stripped out the "[TERMINAL FEED]" bold subtitle line completely
+        # Removed the "[TERMINAL FEED]" bold row completely
         st.markdown(
             f"""
             <div class="ai-terminal">
@@ -193,8 +176,6 @@ else:
             """,
             unsafe_allow_html=True,
         )
-    else:
-        st.info("ℹ Rose Terminal Error: No transactional ledger rows available to display.")
 
 # ==============================================================================
 # PERSISTENT CONVERSATIONAL CHATBOT FOOTER 
@@ -202,16 +183,14 @@ else:
 st.markdown("---")
 st.subheader("💬 Quantum Strategy Sandbox")
 
-# 4. FIXED: Clean empty list initialization eliminates default automated messages
+# Clean blank slate startup
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# Output conversational logs
 for message in st.session_state.chat_history:
     with st.chat_message(message["role"]):
         st.write(message["content"])
 
-# Track submission loops
 if user_query := st.chat_input("Enter strategic data inquiry (e.g., 'What is a momentum risk?')..."):
     st.session_state.chat_history.append({"role": "user", "content": user_query})
     with st.chat_message("user"):
