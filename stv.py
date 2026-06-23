@@ -157,107 +157,96 @@ if ticker:
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # Dual-Column Terminal Window Splitting
-            chart_col, data_col = st.columns(2)
+            # ==============================================================================
+# VISUALIZATION & ANALYTICS DATA DISPLAY LAYOUT
+# ==============================================================================
 
-            with chart_col:
-                fig, ax = plt.subplots(figsize=(10, 4.2), facecolor="#111827")
-                ax.set_facecolor("#111827")
+# Create side-by-side column partitions with a clean horizontal gap
+chart_col, data_col = st.columns([1, 1], gap="medium")
 
-                ax.plot(
-                    selected_dates,
-                    closing_prices,
-                    marker="o",
-                    color=chart_color,
-                    linewidth=3,
-                    markersize=6,
-                    label=ticker,
-                )
-                ax.fill_between(
-                    selected_dates,
-                    closing_prices,
-                    min(closing_prices) * 0.99,
-                    color=chart_color,
-                    alpha=0.1,
-                )
+with chart_col:
+    # 1. Standardize the Matplotlib layout container frame dimensions
+    fig, ax = plt.subplots(figsize=(7, 4.3), facecolor="#111827")
+    ax.set_facecolor("#111827")
+    
+    # Render the asset plotting matrix onto the canvas frame
+    ax.plot(
+        df_window['Date'], 
+        df_window['Close'], 
+        color=accent_color, 
+        linewidth=2.5, 
+        marker='o', 
+        markersize=4
+    )
+    
+    ax.set_title(
+        f"{ticker} – OVERVIEW STRATIFIED TIMELINE PROFILE", 
+        color="#e5e7eb", 
+        fontsize=10, 
+        fontweight='bold', 
+        pad=10
+    )
+    
+    ax.grid(True, linestyle='--', alpha=0.3, color='#374151')
+    ax.tick_params(colors='#9ca3af', labelsize=8)
+    plt.xticks(rotation=45)
+    
+    # Ensure layout parameters sit tightly inside the boundaries
+    plt.tight_layout()
+    st.pyplot(fig, use_container_width=True)
 
-                ax.set_title(
-                    f"{ticker} — OVERVIEW STRATIFIED TIMELINE PROFILE",
-                    color="#9ca3af",
-                    fontsize=11,
-                    fontweight="bold",
-                    pad=15,
-                )
-                ax.tick_params(colors="#9ca3af", labelsize=9)
-                ax.grid(True, color="#374151", linestyle="--", alpha=0.5)
-                plt.xticks(rotation=45)
-
-                for spine in ax.spines.values():
-                    spine.set_color("#374151")
-
-                st.pyplot(fig)
-                plt.close(fig)
-
-            with data_col:
-                st.subheader("📊 Historical Ledger Sheet")
-                ledger_data = []
-                for index, row in selected_df.iloc[::-1].iterrows():
-                    ledger_data.append(
-                        {
-                            "Date": index.strftime("%Y-%m-%d"),
-                            "Open": f"${row['Open']:.2f}",
-                            "High": f"${row['High']:.2f}",
-                            "Low": f"${row['Low']:.2f}",
-                            "Close": f"${row['Close']:.2f}",
-                            "Volume": f"{int(row['Volume']):,}",
-                        }
-                    )
-                st.dataframe(
-                    ledger_data, use_container_width=True, hide_index=True, height=305
-                )
-
-            # --- STREAMING AI LOG BLOCK ---
-            st.markdown("---")
-            st.subheader("🤖 Cloud Cognitive Intelligence Interpretation")
-            with st.spinner(
-                "Streaming cloud-vectored analytics from Groq engine..."
-            ):
-                ai_interpretation = generate_ai_analysis(ticker, selected_df)
-
-            st.markdown(
-                f"""
-                <div class="ai-terminal">
-                    {ai_interpretation}
-                </div>
-            """,
-                unsafe_allow_html=True,
-            )
-
-        else:
-            st.error(f"❌ No asset data found for symbol: {ticker}")
-    except Exception as e:
-        st.error(f"💥 Analytics pipeline failure: {str(e)}")
-else:
-    st.info(
-        "ℹ️ System terminal initialized. Change the asset ticker in the sidebar to load charts."
+with data_col:
+    st.subheader("📊 Historical Ledger Sheet")
+    
+    # Generate structured presentation matrix array configuration
+    ledger_data = df_window[['Date', 'Open', 'High', 'Low', 'Close', 'Volume']].copy()
+    ledger_data['Open'] = ledger_data['Open'].map('${:,.2f}'.format)
+    ledger_data['High'] = ledger_data['High'].map('${:,.2f}'.format)
+    ledger_data['Low'] = ledger_data['Low'].map('${:,.2f}'.format)
+    ledger_data['Close'] = ledger_data['Close'].map('${:,.2f}'.format)
+    ledger_data['Volume'] = ledger_data['Volume'].map('{:,.0f}'.format)
+    
+    # Limit the dataframe container height to match the chart frame baseline
+    st.dataframe(
+        ledger_data, 
+        use_container_width=True, 
+        hide_index=True,
+        height=320  # Hard pixel constraint forces absolute grid symmetry
     )
 
-# --- PERSISTENT CONVERSATIONAL CHATBOT FOOTER ---
+# ==============================================================================
+# COGNITIVE ENGINE INTERPRETATION OUTPUT TERMINAL
+# ==============================================================================
+st.subheader("👁️ Cloud Cognitive Intelligence Interpretation")
+
+# Inject AI summary text safely inside the customized dark-mode terminal layout
+st.markdown(
+    f"""
+    <div class="ai-terminal">
+        {ai_interpretation}
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+# ==============================================================================
+# PERSISTENT CONVERSATIONAL CHATBOT FOOTER 
+# ==============================================================================
 st.markdown("---")
 st.subheader("💬 Quantum Strategy Sandbox")
 
-# Initialize chat matrix state variables if missing
+# Initialize chat matrix state variables if missing (Start with a blank slate canvas)
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# Display current active history logs
+# Display current active history logs smoothly on page reloads
 for message in st.session_state.chat_history:
     with st.chat_message(message["role"]):
         st.write(message["content"])
 
 # Handle real-time interface submission input query
 if user_query := st.chat_input("Enter strategic data inquiry (e.g., 'What is a momentum risk?')..."):
-    # Append user prompt immediately to interface
+    # Append user prompt immediately to interface log
     st.session_state.chat_history.append({"role": "user", "content": user_query})
     with st.chat_message("user"):
         st.write(user_query)
