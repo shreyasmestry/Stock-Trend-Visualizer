@@ -7,7 +7,6 @@ import yfinance as yf  # Free, unlimited financial data stream
 import os
 
 # GROQ API CONFIGURATION:
-# Securely pulls your free API key from Render's Environment Variables
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 
 # Configure widescreen dark terminal canvas
@@ -35,11 +34,17 @@ st.markdown(
         div[data-testid="stMetricValue"] {
             color: #ffffff !important;
         }
-        /* FIXED: Corrected style comment parsing. Forces top labels to bright white */
-        div[data-testid="stMetricLabel"] p {
+        
+        /* FIXED: Heavy target selector to completely force metric labels to high-contrast white */
+        [data-testid="stMetricLabel"], 
+        [data-testid="stMetricLabel"] *, 
+        div[data-testid="stMetricLabel"] p, 
+        div[data-testid="stMetricLabel"] div {
             color: #f3f4f6 !important;
             font-weight: 600 !important;
+            opacity: 1 !important;
         }
+        
         h1 {
             background: linear-gradient(to right, #3b82f6, #10b981);
             -webkit-background-clip: text;
@@ -78,11 +83,9 @@ def generate_ai_analysis(ticker, selected_df):
     prompt = f"Analyze the following stock market asset history for ticker code: {ticker}.\nData:\n{json.dumps(summary_pack)}\n\nProvide a rapid 2-to-3 sentence analysis of the structural trend pattern (Bullish, Bearish, or Volatile) and highlight any immediate momentum risks."
 
     try:
-        # Initialize Groq cloud engine client
         client = Groq(api_key=GROQ_API_KEY)
-        
         response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",  # Free, lightning-fast model tier
+            model="llama-3.1-8b-instant",
             messages=[
                 {"role": "user", "content": prompt}
             ],
@@ -108,7 +111,7 @@ with st.sidebar:
         .strip()
     )
     days_to_show = st.slider(
-        "📅 Timeline Window (Days)", min_value=5, max_value=30, value=10
+        "📅 Timeline Window (Days)", min_value=5, max_value=30, value=12
     )
     chart_color = st.color_picker("🎨 Performance Accent Line Glow", "#10b981")
 
@@ -156,16 +159,17 @@ if ticker:
             st.markdown("<br>", unsafe_allow_html=True)
 
             # ==============================================================================
-            # VISUALIZATION & ANALYTICS DATA DISPLAY LAYOUT (FIXED SIDE-BY-SIDE)
+            # VISUALIZATION & ANALYTICS DATA DISPLAY LAYOUT (PERFECT TOP ALIGNMENT)
             # ==============================================================================
             chart_col, data_col = st.columns([1, 1], gap="medium")
 
             with chart_col:
-                # 1. Matplotlib frame layout sized cleanly for side-by-side display
-                fig, ax = plt.subplots(figsize=(6, 3.8), facecolor="#111827")
+                # FIXED: Created a matching markdown header above the chart so it lines up with the table title
+                st.markdown(f"<h3 style='margin:0; padding-bottom:12px; color:#f3f4f6;'>📈 {ticker} – Timeline Profile</h3>", unsafe_allow_html=True)
+                
+                fig, ax = plt.subplots(figsize=(6, 3.4), facecolor="#111827")
                 ax.set_facecolor("#111827")
                 
-                # FIXED: Mapped active trend lines to the correct variable names
                 ax.plot(
                     selected_dates, 
                     closing_prices, 
@@ -173,14 +177,6 @@ if ticker:
                     linewidth=2.5, 
                     marker='o', 
                     markersize=4
-                )
-                
-                ax.set_title(
-                    f"{ticker} – OVERVIEW STRATIFIED TIMELINE PROFILE", 
-                    color="#e5e7eb", 
-                    fontsize=10, 
-                    fontweight='bold', 
-                    pad=10
                 )
                 
                 ax.grid(True, linestyle='--', alpha=0.3, color='#374151')
@@ -191,9 +187,9 @@ if ticker:
                 st.pyplot(fig, use_container_width=True)
 
             with data_col:
+                # Matching markdown header
                 st.markdown("<h3 style='margin:0; padding-bottom:12px; color:#f3f4f6;'>📊 Historical Ledger Sheet</h3>", unsafe_allow_html=True)
                 
-                # Format ledger using the correct dataframe index transformations
                 ledger_data = selected_df.copy()
                 ledger_data.index = ledger_data.index.strftime('%Y-%m-%d')
                 ledger_data = ledger_data.reset_index().rename(columns={'Date': 'Date'})
@@ -204,12 +200,12 @@ if ticker:
                 ledger_data['Close'] = ledger_data['Close'].map('${:,.2f}'.format)
                 ledger_data['Volume'] = ledger_data['Volume'].map('{:,.0f}'.format)
                 
-                # Height constraint perfectly matches the frame altitude of the chart block next to it
+                # FIXED: Sized to exactly snap alongside the plot canvas height
                 st.dataframe(
                     ledger_data[['Date', 'Open', 'High', 'Low', 'Close', 'Volume']], 
                     use_container_width=True, 
                     hide_index=True,
-                    height=305  
+                    height=280  
                 )
 
             # --- STREAMING AI LOG BLOCK ---
@@ -241,16 +237,13 @@ else:
 st.markdown("---")
 st.subheader("💬 The Analytics Analyser ")
 
-# Initialize chat matrix state variables if missing
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# Display current active history logs
 for message in st.session_state.chat_history:
     with st.chat_message(message["role"]):
         st.write(message["content"])
 
-# Handle real-time interface submission input query
 if user_query := st.chat_input("Enter strategic data inquiry (e.g., 'What is a momentum risk?')..."):
     st.session_state.chat_history.append({"role": "user", "content": user_query})
     with st.chat_message("user"):
@@ -260,23 +253,18 @@ if user_query := st.chat_input("Enter strategic data inquiry (e.g., 'What is a m
         with st.spinner("Processing cognitive matrix response..."):
             try:
                 client = Groq(api_key=GROQ_API_KEY)
-                
                 messages_payload = [
                     {"role": msg["role"], "content": msg["content"]}
                     for msg in st.session_state.chat_history
                 ]
-                
                 response = client.chat.completions.create(
                     model="llama-3.1-8b-instant",
                     messages=messages_payload,
                     temperature=0.5,
                     max_tokens=250
                 )
-                
                 bot_response = response.choices[0].message.content
                 st.write(bot_response)
-                
                 st.session_state.chat_history.append({"role": "assistant", "content": bot_response})
-                
             except Exception as e:
                 st.error(f"⚠️ Chat node link broken: `{str(e)}`")
