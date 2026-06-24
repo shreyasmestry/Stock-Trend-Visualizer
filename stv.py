@@ -241,7 +241,7 @@ else:
 
 # --- PERSISTENT CONVERSATIONAL CHATBOT FOOTER ---
 st.markdown("---")
-st.subheader("💬 Quantum Strategy Sandbox")
+st.subheader("💬 The Analytics Analyser ")
 
 # Initialize chat matrix state variables if missing
 if "chat_history" not in st.session_state:
