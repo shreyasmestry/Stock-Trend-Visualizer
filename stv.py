@@ -108,7 +108,7 @@ with st.sidebar:
         .strip()
     )
     days_to_show = st.slider(
-        "📅 Timeline Window (Days)", min_value=5, max_value=30, value=12
+        "📅 Timeline Window (Days)", min_value=5, max_value=30, value=10
     )
     chart_color = st.color_picker("🎨 Performance Accent Line Glow", "#10b981")
 
