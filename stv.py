@@ -35,7 +35,7 @@ st.markdown(
         div[data-testid="stMetricValue"] {
             color: #ffffff !important;
         }
-       # Force the top metric headers/labels to be high-contrast and readable
+        /* Force the top metric headers/labels to be high-contrast and readable */
         div[data-testid="stMetricLabel"] p {
             color: #f3f4f6 !important;
             font-weight: 600 !important;
@@ -56,7 +56,7 @@ st.markdown(
             margin-top: 10px;
         }
     </style>
-""",
+    """,
     unsafe_allow_html=True,
 )
 
@@ -155,68 +155,67 @@ if ticker:
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # Dual-Column Terminal Window Splitting
             # ==============================================================================
-# VISUALIZATION & ANALYTICS DATA DISPLAY LAYOUT
-# ==============================================================================
-# Force an even, clean 50/50 column split layout
-chart_col, data_col = st.columns([1, 1], gap="medium")
+            # VISUALIZATION & ANALYTICS DATA DISPLAY LAYOUT
+            # ==============================================================================
+            chart_col, data_col = st.columns([1, 1], gap="medium")
 
-with chart_col:
-    # 1. Matplotlib frame layout sized cleanly for side-by-side display
-    fig, ax = plt.subplots(figsize=(6,3.8), facecolor="#111827")
-    ax.set_facecolor("#111827")
-    
-    # Render your active charting lines onto the layout canvas
-    ax.plot(
-        df_window['Date'], 
-        df_window['Close'], 
-        color=accent_color, 
-        linewidth=2.5, 
-        marker='o', 
-        markersize=4
-    )
-    
-    ax.set_title(
-        f"{ticker} – OVERVIEW STRATIFIED TIMELINE PROFILE", 
-        color="#e5e7eb", 
-        fontsize=10, 
-        fontweight='bold', 
-        pad=10
-    )
-    
-    ax.grid(True, linestyle='--', alpha=0.3, color='#374151')
-    ax.tick_params(colors='#9ca3af', labelsize=8)
-    plt.xticks(rotation=45)
-    
-    plt.tight_layout()
-    st.pyplot(fig, use_container_width=True)
+            with chart_col:
+                # Matplotlib frame layout sized cleanly for side-by-side display
+                fig, ax = plt.subplots(figsize=(6, 3.8), facecolor="#111827")
+                ax.set_facecolor("#111827")
+                
+                # Render your active charting lines using correct script variables
+                ax.plot(
+                    selected_dates, 
+                    closing_prices, 
+                    color=chart_color, 
+                    linewidth=2.5, 
+                    marker='o', 
+                    markersize=4
+                )
+                
+                ax.set_title(
+                    f"{ticker} – OVERVIEW STRATIFIED TIMELINE PROFILE", 
+                    color="#e5e7eb", 
+                    fontsize=10, 
+                    fontweight='bold', 
+                    pad=10
+                )
+                
+                ax.grid(True, linestyle='--', alpha=0.3, color='#374151')
+                ax.tick_params(colors='#9ca3af', labelsize=8)
+                plt.xticks(rotation=45)
+                
+                plt.tight_layout()
+                st.pyplot(fig, use_container_width=True)
 
-with data_col:
-    # 2. Clean structural heading matching the baseline
-    st.markdown("<h3 style='margin:0; padding-bottom:12px; color:#f3f4f6;'>📊 Historical Ledger Sheet</h3>", unsafe_allow_html=True)
-    
-    ledger_data = df_window[['Date', 'Open', 'High', 'Low', 'Close', 'Volume']].copy()
-    ledger_data['Open'] = ledger_data['Open'].map('${:,.2f}'.format)
-    ledger_data['High'] = ledger_data['High'].map('${:,.2f}'.format)
-    ledger_data['Low'] = ledger_data['Low'].map('${:,.2f}'.format)
-    ledger_data['Close'] = ledger_data['Close'].map('${:,.2f}'.format)
-    ledger_data['Volume'] = ledger_data['Volume'].map('{:,.0f}'.format)
-    
-    # 3. Height constraint perfectly matches the frame altitude of the chart block next to it
-    st.dataframe(
-        ledger_data, 
-        use_container_width=True, 
-        hide_index=True,
-        height=305  
-    )
+            with data_col:
+                st.markdown("<h3 style='margin:0; padding-bottom:12px; color:#f3f4f6;'>📊 Historical Ledger Sheet</h3>", unsafe_allow_html=True)
+                
+                # Format ledger using the correct dataframe index transformations
+                ledger_data = selected_df.copy()
+                ledger_data.index = ledger_data.index.strftime('%Y-%m-%d')
+                ledger_data = ledger_data.reset_index().rename(columns={'Date': 'Date'})
+                
+                ledger_data['Open'] = ledger_data['Open'].map('${:,.2f}'.format)
+                ledger_data['High'] = ledger_data['High'].map('${:,.2f}'.format)
+                ledger_data['Low'] = ledger_data['Low'].map('${:,.2f}'.format)
+                ledger_data['Close'] = ledger_data['Close'].map('${:,.2f}'.format)
+                ledger_data['Volume'] = ledger_data['Volume'].map('{:,.0f}'.format)
+                
+                # Height constraint perfectly matches the frame altitude of the chart block next to it
+                st.dataframe(
+                    ledger_data[['Date', 'Open', 'High', 'Low', 'Close', 'Volume']], 
+                    use_container_width=True, 
+                    hide_index=True,
+                    height=305  
+                )
 
             # --- STREAMING AI LOG BLOCK ---
             st.markdown("---")
             st.subheader("🤖 Cloud Cognitive Intelligence Interpretation")
-            with st.spinner(
-                "Streaming cloud-vectored analytics from Groq engine..."
-            ):
+            with st.spinner("Streaming cloud-vectored analytics from Groq engine..."):
                 ai_interpretation = generate_ai_analysis(ticker, selected_df)
 
             st.markdown(
@@ -224,12 +223,13 @@ with data_col:
                 <div class="ai-terminal">
                     {ai_interpretation}
                 </div>
-            """,
+                """,
                 unsafe_allow_html=True,
             )
 
         else:
             st.error(f"❌ No asset data found for symbol: {ticker}")
+            
     except Exception as e:
         st.error(f"💥 Analytics pipeline failure: {str(e)}")
 else:
@@ -252,18 +252,15 @@ for message in st.session_state.chat_history:
 
 # Handle real-time interface submission input query
 if user_query := st.chat_input("Enter strategic data inquiry (e.g., 'What is a momentum risk?')..."):
-    # Append user prompt immediately to interface
     st.session_state.chat_history.append({"role": "user", "content": user_query})
     with st.chat_message("user"):
         st.write(user_query)
 
-    # Route message query payload out to Groq engine cluster
     with st.chat_message("assistant"):
         with st.spinner("Processing cognitive matrix response..."):
             try:
                 client = Groq(api_key=GROQ_API_KEY)
                 
-                # Format full thread context history for the model
                 messages_payload = [
                     {"role": msg["role"], "content": msg["content"]}
                     for msg in st.session_state.chat_history
@@ -279,7 +276,6 @@ if user_query := st.chat_input("Enter strategic data inquiry (e.g., 'What is a m
                 bot_response = response.choices[0].message.content
                 st.write(bot_response)
                 
-                # Append finalized structure output back to persistent session history state
                 st.session_state.chat_history.append({"role": "assistant", "content": bot_response})
                 
             except Exception as e:
