@@ -35,9 +35,10 @@ st.markdown(
         div[data-testid="stMetricValue"] {
             color: #ffffff !important;
         }
-        /* Force the top metric headers/labels to be high-contrast and readable */
-        div[data-testid="stMetricLabel"] > div {
-            color: #e5e7eb !important;
+       # Force the top metric headers/labels to be high-contrast and readable
+        div[data-testid="stMetricLabel"] p {
+            color: #f3f4f6 !important;
+            font-weight: 600 !important;
         }
         h1 {
             background: linear-gradient(to right, #3b82f6, #10b981);
@@ -155,63 +156,60 @@ if ticker:
             st.markdown("<br>", unsafe_allow_html=True)
 
             # Dual-Column Terminal Window Splitting
-            chart_col, data_col = st.columns(2)
+            # ==============================================================================
+# VISUALIZATION & ANALYTICS DATA DISPLAY LAYOUT
+# ==============================================================================
+# Force an even, clean 50/50 column split layout
+chart_col, data_col = st.columns([1, 1], gap="medium")
 
-            with chart_col:
-                fig, ax = plt.subplots(figsize=(10, 4.8), facecolor="#111827")
-                ax.set_facecolor("#111827")
+with chart_col:
+    # 1. Matplotlib frame layout sized cleanly for side-by-side display
+    fig, ax = plt.subplots(figsize=(6,3.8), facecolor="#111827")
+    ax.set_facecolor("#111827")
+    
+    # Render your active charting lines onto the layout canvas
+    ax.plot(
+        df_window['Date'], 
+        df_window['Close'], 
+        color=accent_color, 
+        linewidth=2.5, 
+        marker='o', 
+        markersize=4
+    )
+    
+    ax.set_title(
+        f"{ticker} – OVERVIEW STRATIFIED TIMELINE PROFILE", 
+        color="#e5e7eb", 
+        fontsize=10, 
+        fontweight='bold', 
+        pad=10
+    )
+    
+    ax.grid(True, linestyle='--', alpha=0.3, color='#374151')
+    ax.tick_params(colors='#9ca3af', labelsize=8)
+    plt.xticks(rotation=45)
+    
+    plt.tight_layout()
+    st.pyplot(fig, use_container_width=True)
 
-                ax.plot(
-                    selected_dates,
-                    closing_prices,
-                    marker="o",
-                    color=chart_color,
-                    linewidth=3,
-                    markersize=6,
-                    label=ticker,
-                )
-                ax.fill_between(
-                    selected_dates,
-                    closing_prices,
-                    min(closing_prices) * 0.99,
-                    color=chart_color,
-                    alpha=0.1,
-                )
-
-                ax.set_title(
-                    f"{ticker} — OVERVIEW STRATIFIED TIMELINE PROFILE",
-                    color="#9ca3af",
-                    fontsize=11,
-                    fontweight="bold",
-                    pad=15,
-                )
-                ax.tick_params(colors="#9ca3af", labelsize=9)
-                ax.grid(True, color="#374151", linestyle="--", alpha=0.5)
-                plt.xticks(rotation=45)
-
-                for spine in ax.spines.values():
-                    spine.set_color("#374151")
-
-                st.pyplot(fig)
-                plt.close(fig)
-
-            with data_col:
-                st.subheader("📊 Historical Ledger Sheet")
-                ledger_data = []
-                for index, row in selected_df.iloc[::-1].iterrows():
-                    ledger_data.append(
-                        {
-                            "Date": index.strftime("%Y-%m-%d"),
-                            "Open": f"${row['Open']:.2f}",
-                            "High": f"${row['High']:.2f}",
-                            "Low": f"${row['Low']:.2f}",
-                            "Close": f"${row['Close']:.2f}",
-                            "Volume": f"{int(row['Volume']):,}",
-                        }
-                    )
-                st.dataframe(
-                    ledger_data, use_container_width=True, hide_index=True
-                )
+with data_col:
+    # 2. Clean structural heading matching the baseline
+    st.markdown("<h3 style='margin:0; padding-bottom:12px; color:#f3f4f6;'>📊 Historical Ledger Sheet</h3>", unsafe_allow_html=True)
+    
+    ledger_data = df_window[['Date', 'Open', 'High', 'Low', 'Close', 'Volume']].copy()
+    ledger_data['Open'] = ledger_data['Open'].map('${:,.2f}'.format)
+    ledger_data['High'] = ledger_data['High'].map('${:,.2f}'.format)
+    ledger_data['Low'] = ledger_data['Low'].map('${:,.2f}'.format)
+    ledger_data['Close'] = ledger_data['Close'].map('${:,.2f}'.format)
+    ledger_data['Volume'] = ledger_data['Volume'].map('{:,.0f}'.format)
+    
+    # 3. Height constraint perfectly matches the frame altitude of the chart block next to it
+    st.dataframe(
+        ledger_data, 
+        use_container_width=True, 
+        hide_index=True,
+        height=305  
+    )
 
             # --- STREAMING AI LOG BLOCK ---
             st.markdown("---")
