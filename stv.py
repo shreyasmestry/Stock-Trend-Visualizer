@@ -158,16 +158,16 @@ if ticker:
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # ==============================================================================
-            # VISUALIZATION & ANALYTICS DATA DISPLAY LAYOUT (PERFECT TOP ALIGNMENT)
+           # ==============================================================================
+            # VISUALIZATION & ANALYTICS DATA DISPLAY LAYOUT (PERFECT alignment)
             # ==============================================================================
             chart_col, data_col = st.columns([1, 1], gap="medium")
 
             with chart_col:
-                # FIXED: Created a matching markdown header above the chart so it lines up with the table title
                 st.markdown(f"<h3 style='margin:0; padding-bottom:12px; color:#f3f4f6;'>📈 {ticker} – Timeline Profile</h3>", unsafe_allow_html=True)
                 
-                fig, ax = plt.subplots(figsize=(6, 3.4), facecolor="#111827")
+                # Sized perfectly to match baseline grid coordinates
+                fig, ax = plt.subplots(figsize=(6, 3.2), facecolor="#111827")
                 ax.set_facecolor("#111827")
                 
                 ax.plot(
@@ -183,11 +183,11 @@ if ticker:
                 ax.tick_params(colors='#9ca3af', labelsize=8)
                 plt.xticks(rotation=45)
                 
-                plt.tight_layout()
-                st.pyplot(fig, use_container_width=True)
+                # FIXED: Force layout margins to be completely flush against the column header boundaries
+                fig.subplots_adjust(left=0.08, right=0.98, top=0.95, bottom=0.2)
+                st.pyplot(fig, use_container_width=True, bbox_inches='tight')
 
             with data_col:
-                # Matching markdown header
                 st.markdown("<h3 style='margin:0; padding-bottom:12px; color:#f3f4f6;'>📊 Historical Ledger Sheet</h3>", unsafe_allow_html=True)
                 
                 ledger_data = selected_df.copy()
@@ -200,12 +200,12 @@ if ticker:
                 ledger_data['Close'] = ledger_data['Close'].map('${:,.2f}'.format)
                 ledger_data['Volume'] = ledger_data['Volume'].map('{:,.0f}'.format)
                 
-                # FIXED: Sized to exactly snap alongside the plot canvas height
+                # FIXED: Adjusted pixel height to make the table card track the chart canvas perfectly
                 st.dataframe(
                     ledger_data[['Date', 'Open', 'High', 'Low', 'Close', 'Volume']], 
                     use_container_width=True, 
                     hide_index=True,
-                    height=280  
+                    height=248
                 )
 
             # --- STREAMING AI LOG BLOCK ---
