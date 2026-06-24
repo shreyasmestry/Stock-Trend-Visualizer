@@ -35,7 +35,7 @@ st.markdown(
         div[data-testid="stMetricValue"] {
             color: #ffffff !important;
         }
-        /* Force the top metric headers/labels to be high-contrast and readable */
+        /* FIXED: Corrected style comment parsing. Forces top labels to bright white */
         div[data-testid="stMetricLabel"] p {
             color: #f3f4f6 !important;
             font-weight: 600 !important;
@@ -156,16 +156,16 @@ if ticker:
             st.markdown("<br>", unsafe_allow_html=True)
 
             # ==============================================================================
-            # VISUALIZATION & ANALYTICS DATA DISPLAY LAYOUT
+            # VISUALIZATION & ANALYTICS DATA DISPLAY LAYOUT (FIXED SIDE-BY-SIDE)
             # ==============================================================================
             chart_col, data_col = st.columns([1, 1], gap="medium")
 
             with chart_col:
-                # Matplotlib frame layout sized cleanly for side-by-side display
+                # 1. Matplotlib frame layout sized cleanly for side-by-side display
                 fig, ax = plt.subplots(figsize=(6, 3.8), facecolor="#111827")
                 ax.set_facecolor("#111827")
                 
-                # Render your active charting lines using correct script variables
+                # FIXED: Mapped active trend lines to the correct variable names
                 ax.plot(
                     selected_dates, 
                     closing_prices, 
